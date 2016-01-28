@@ -1,6 +1,9 @@
 [package]
+authors = ["Amelorate <ameilorate2@gmail.com>"]
+description = "Serializes and psudo-deserializes structs implementing the Error trait."
+license = "MIT"
 name = "errorser"
-version = "0.1.0"
-authors = ["grant"]
-
+readme = "README.md"
+repository = "https://github.com/Ameliorate/errorser"
+version = "0.0.1"
 [dependencies]
