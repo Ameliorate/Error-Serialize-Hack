@@ -36,8 +36,8 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 
 use bincode::SizeLimit;
-use bincode::serde::serialize as binser;
-use serde_json::to_string as jser;
+use bincode::serde::serialize as bin_serialize;
+use serde_json::to_string as json_serialize;
 
 /// An error that can be serialized by serde or rustc_seralize.
 #[derive(Serialize, Deserialize, Debug)]    // TODO: Add rustc_seralize compatibility.
@@ -67,7 +67,7 @@ impl<'a> From<&'a Error> for PseudoError {
     fn from(err: &Error) -> PseudoError {
         PseudoError {
             cause: err.cause().map(|cause| Box::new(PseudoError::from(cause))), /* In prevous versions of this line, it was almost lisp with the number of close perens here. */
-            desc: err.description().to_string(),
+            desc: err.description().to_owned(),
         }
     }
 }
@@ -103,8 +103,8 @@ impl Error for PseudoError {
 /// let errser = serialize_error_bytes(&error);
 /// assert_eq!(errser, [0, 1]);
 /// ```
-pub fn serialize_error_bytes<'a>(to_ser: &'a Error) -> Vec<u8> {
-    binser(&PseudoError::from(to_ser), SizeLimit::Infinite).unwrap()
+pub fn serialize_error_bytes(to_ser: &Error) -> Vec<u8> {
+    bin_serialize(&PseudoError::from(to_ser), SizeLimit::Infinite).unwrap()
 }
 
 /// Serializes any type implementing Error to a string that can be deseralized with deserialize_string.
@@ -120,8 +120,8 @@ pub fn serialize_error_bytes<'a>(to_ser: &'a Error) -> Vec<u8> {
 /// let errser = serialize_error_string(&error);
 /// assert_eq!(errser, "???");
 /// ```
-pub fn serialize_error_string<'a>(to_ser: &'a Error) -> String {
-    jser(&PseudoError::from(to_ser)).unwrap()
+pub fn serialize_error_string(to_ser: &Error) -> String {
+    json_serialize(&PseudoError::from(to_ser)).unwrap()
 }
 
 #[cfg(test)]
