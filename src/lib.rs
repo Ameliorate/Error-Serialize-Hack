@@ -1,11 +1,11 @@
 #![feature(custom_derive, plugin, stmt_expr_attributes)]
-#![plugin(serde_macros)]
+#![plugin(serde_macros, clippy)]
 #![deny(missing_docs,
         missing_debug_implementations, missing_copy_implementations,
         trivial_casts, trivial_numeric_casts,
         unsafe_code,
         unused_import_braces, unused_qualifications,
-        warnings)]
+        warnings, clippy)]
 
 //! Serializes and psudo-deserializes structs implementing the Error trait. This should only be done if you know you won't ever need an actual error value, only the description and causes.
 //!
