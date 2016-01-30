@@ -41,7 +41,7 @@ use bincode::serde::serialize as bin_serialize;
 use serde_json::to_string as json_serialize;
 
 /// An error that can be serialized by serde or rustc_seralize.
-#[derive(Serialize, Deserialize, Debug, RustcEncodable, RustcDecodable)]    // TODO: Add rustc_seralize compatibility.
+#[derive(Serialize, Deserialize, Debug, RustcEncodable, RustcDecodable)]
 pub enum SeralizableError {
     /// If the error is commonly used, such as something from std, some of it's fields may be preserved. This variant represents these kinds of errors.
     RealError(real_error_impls::RealError),
