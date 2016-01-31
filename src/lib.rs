@@ -24,8 +24,8 @@ use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
-use bincode::SizeLimit;
-use bincode::serde::serialize as bin_serialize;
+use bincode::{SizeLimit, serde as bin};
+use bincode::serde::{serialize as bin_serialize, deserialize as bin_deserialize};
 use serde_json::{to_string as json_serialize, from_str as json_deserialize, error as json};
 
 pub use real_error_impls::RealError;
@@ -125,6 +125,11 @@ pub fn serialize_error_bytes(to_ser: &Error) -> Vec<u8> {
 /// Serializes any type implementing Error to a string that can be deseralized with deserialize_string.
 pub fn serialize_error_string(to_ser: &Error) -> String {
     json_serialize(&SeralizableError::from(to_ser)).unwrap()
+}
+
+/// Deseralizes a slice of bytes into a SeralizableError.
+pub fn deserialize_error_bytes(to_de: &[u8]) -> Result<SeralizableError, bin::DeserializeError> {
+    bin_deserialize(to_de)
 }
 
 /// Deseralizes a string to a SeralizableError.
