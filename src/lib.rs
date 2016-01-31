@@ -44,7 +44,7 @@ impl Display for SeralizableError {
         use SeralizableError::*;
         match *self {
             RealError(ref _rerr) => unimplemented!(),
-            PseudoError(ref perr) => write!(fmt, "{}", perr),
+            PseudoError(ref perr) => perr.fmt(fmt),
         }
     }
 }
