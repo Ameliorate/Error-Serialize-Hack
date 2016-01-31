@@ -141,7 +141,7 @@ impl Error for PseudoError {
 /// assert_eq!(errser, [0, 1]);
 /// ```
 pub fn serialize_error_bytes(to_ser: &Error) -> Vec<u8> {
-    bin_serialize(&PseudoError::from(to_ser), SizeLimit::Infinite).unwrap()
+    bin_serialize(&SeralizableError::from(to_ser), SizeLimit::Infinite).unwrap()
 }
 
 /// Serializes any type implementing Error to a string that can be deseralized with deserialize_string.
@@ -158,7 +158,7 @@ pub fn serialize_error_bytes(to_ser: &Error) -> Vec<u8> {
 /// assert_eq!(errser, "???");
 /// ```
 pub fn serialize_error_string(to_ser: &Error) -> String {
-    json_serialize(&PseudoError::from(to_ser)).unwrap()
+    json_serialize(&SeralizableError::from(to_ser)).unwrap()
 }
 
 #[cfg(test)]
