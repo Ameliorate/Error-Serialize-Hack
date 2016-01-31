@@ -11,18 +11,6 @@
 //!
 //! This crate assumes that the error descriptions are complete, and are indicative of the error going on.
 //! There is also no way to get any values accoated with the error, since that would require real serialization of arbratrary structs, implementing a trait you didn't make.
-//!
-//! #Examples
-//!
-//! ```
-//! use std::convert::From;
-//! use std::fmt::Error;
-//! use errorser::serialize_error_string;
-//!
-//! let error = Error;
-//! let errser = serialize_error_string(&error);
-//! assert_eq!(errser, "???");
-//! ```
 
 extern crate bincode;
 extern crate rustc_serialize;
@@ -130,35 +118,11 @@ impl Error for PseudoError {
 }
 
 /// Serializes any type implementing Error to a string that can be deseralized with deserialize_bytes.
-///
-/// #Examples
-///
-/// ```
-/// use std::convert::From;
-/// use std::fmt::Error;
-/// use errorser::serialize_error_bytes;
-///
-/// let error = Error;
-/// let errser = serialize_error_bytes(&error);
-/// assert_eq!(errser, [0, 1]);
-/// ```
 pub fn serialize_error_bytes(to_ser: &Error) -> Vec<u8> {
     bin_serialize(&SeralizableError::from(to_ser), SizeLimit::Infinite).unwrap()
 }
 
 /// Serializes any type implementing Error to a string that can be deseralized with deserialize_string.
-///
-/// #Examples
-///
-/// ```
-/// use std::convert::From;
-/// use std::fmt::Error;
-/// use errorser::serialize_error_string;
-///
-/// let error = Error;
-/// let errser = serialize_error_string(&error);
-/// assert_eq!(errser, "???");
-/// ```
 pub fn serialize_error_string(to_ser: &Error) -> String {
     json_serialize(&SeralizableError::from(to_ser)).unwrap()
 }
