@@ -49,6 +49,42 @@ pub enum SeralizableError {
     PseudoError(PseudoError),
 }
 
+impl Display for SeralizableError {
+    fn fmt(&self, fmt: &mut Formatter) -> Result<(), fmt::Error> {
+        use SeralizableError::*;
+        match *self {
+            RealError(ref _rerr) => unimplemented!(),
+            PseudoError(ref perr) => write!(fmt, "{}", perr),
+        }
+    }
+}
+
+impl<'a> From<&'a Error> for SeralizableError {
+    fn from(err: &Error) -> SeralizableError {
+        // TODO: Check if can be seralized as RealError.
+        SeralizableError::PseudoError(PseudoError::from(err))
+    }
+}
+
+impl Error for SeralizableError {
+    fn description(&self) -> &str {
+        use SeralizableError::*;
+        match *self {
+            RealError(ref _rerr) => unimplemented!(),
+            PseudoError(ref perr) => perr.description(),
+        }
+    }
+
+    #[allow(trivial_casts)]
+    fn cause(&self) -> Option<&Error> {
+        use SeralizableError::*;
+        match *self {
+            RealError(ref _rerr) => unimplemented!(),
+            PseudoError(ref perr) => perr.cause(),
+        }
+    }
+}
+
 /// An error that has been made seralization-capable, but has lost it's fields, due to incompatibility with the library or preserving fields being unnesacary.
 ///
 /// See the crate root for more info.
