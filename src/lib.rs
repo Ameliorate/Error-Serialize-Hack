@@ -43,7 +43,7 @@ impl Display for SeralizableError {
     fn fmt(&self, fmt: &mut Formatter) -> Result<(), fmt::Error> {
         use SeralizableError::*;
         match *self {
-            RealError(ref _rerr) => unimplemented!(),
+            RealError(ref rerr) => rerr.fmt(fmt),
             PseudoError(ref perr) => perr.fmt(fmt),
         }
     }
@@ -60,7 +60,7 @@ impl Error for SeralizableError {
     fn description(&self) -> &str {
         use SeralizableError::*;
         match *self {
-            RealError(ref _rerr) => unimplemented!(),
+            RealError(ref rerr) => rerr.description(),
             PseudoError(ref perr) => perr.description(),
         }
     }
@@ -69,7 +69,7 @@ impl Error for SeralizableError {
     fn cause(&self) -> Option<&Error> {
         use SeralizableError::*;
         match *self {
-            RealError(ref _rerr) => unimplemented!(),
+            RealError(ref _rerr) => rerr.cause(),
             PseudoError(ref perr) => perr.cause(),
         }
     }
