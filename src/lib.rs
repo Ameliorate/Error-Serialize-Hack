@@ -69,7 +69,7 @@ impl Error for SeralizableError {
     fn cause(&self) -> Option<&Error> {
         use SeralizableError::*;
         match *self {
-            RealError(ref _rerr) => rerr.cause(),
+            RealError(ref rerr) => rerr.cause(),
             PseudoError(ref perr) => perr.cause(),
         }
     }
