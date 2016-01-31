@@ -1,4 +1,4 @@
-#![feature(custom_derive, plugin, stmt_expr_attributes)]
+#![feature(custom_derive, plugin)]
 #![plugin(serde_macros, clippy)]
 #![deny(missing_docs,
         missing_debug_implementations, missing_copy_implementations,
@@ -40,11 +40,13 @@ use bincode::SizeLimit;
 use bincode::serde::serialize as bin_serialize;
 use serde_json::to_string as json_serialize;
 
+pub use real_error_impls::RealError;
+
 /// An error that can be serialized by serde or rustc_seralize.
-#[derive(Serialize, Deserialize, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Clone, Serialize, Deserialize, Debug, RustcEncodable, RustcDecodable)]
 pub enum SeralizableError {
     /// If the error is commonly used, such as something from std, some of it's fields may be preserved. This variant represents these kinds of errors.
-    RealError(real_error_impls::RealError),
+    RealError(RealError),
     /// If the error isn't in std or isn't common, it is automatically made a PseudoError, loosing it's fields.
     PseudoError(PseudoError),
 }
@@ -88,7 +90,7 @@ impl Error for SeralizableError {
 /// An error that has been made seralization-capable, but has lost it's fields, due to incompatibility with the library or preserving fields being unnesacary.
 ///
 /// See the crate root for more info.
-#[derive(Serialize, Deserialize, Debug, RustcEncodable, RustcDecodable)]
+#[derive(Clone, Serialize, Deserialize, Debug, RustcEncodable, RustcDecodable)]
 pub struct PseudoError {
     cause: Option<Box<PseudoError>>,
     desc: String,
