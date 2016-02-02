@@ -1,4 +1,4 @@
-#![feature(custom_derive, plugin)]
+#![feature(custom_derive, plugin, deprecated)]
 #![plugin(serde_macros, clippy)]
 #![deny(missing_docs,
         missing_debug_implementations, missing_copy_implementations,
@@ -17,8 +17,6 @@ extern crate rustc_serialize;
 extern crate serde;
 extern crate serde_json;
 
-mod real_error_impls;
-
 use std::convert::{From, AsRef};
 use std::error::Error;
 use std::fmt;
@@ -27,53 +25,6 @@ use std::fmt::{Display, Formatter};
 use bincode::{SizeLimit, serde as bin};
 use bincode::serde::{serialize as bin_serialize, deserialize as bin_deserialize};
 use serde_json::{to_string as json_serialize, from_str as json_deserialize, error as json};
-
-pub use real_error_impls::RealError;
-
-/// An error that can be serialized by serde or rustc_seralize.
-#[derive(Clone, Serialize, Deserialize, Debug, RustcEncodable, RustcDecodable)]
-pub enum SeralizableError {
-    /// If the error is commonly used, such as something from std, some of it's fields may be preserved. This variant represents these kinds of errors.
-    RealError(RealError),
-    /// If the error isn't in std or isn't common, it is automatically made a PseudoError, loosing it's fields.
-    PseudoError(PseudoError),
-}
-
-impl Display for SeralizableError {
-    fn fmt(&self, fmt: &mut Formatter) -> Result<(), fmt::Error> {
-        use SeralizableError::*;
-        match *self {
-            RealError(ref rerr) => rerr.fmt(fmt),
-            PseudoError(ref perr) => perr.fmt(fmt),
-        }
-    }
-}
-
-impl<'a> From<&'a Error> for SeralizableError {
-    fn from(err: &Error) -> SeralizableError {
-        // TODO: Check if can be seralized as RealError.
-        SeralizableError::PseudoError(PseudoError::from(err))
-    }
-}
-
-impl Error for SeralizableError {
-    fn description(&self) -> &str {
-        use SeralizableError::*;
-        match *self {
-            RealError(ref rerr) => rerr.description(),
-            PseudoError(ref perr) => perr.description(),
-        }
-    }
-
-    #[allow(trivial_casts)]
-    fn cause(&self) -> Option<&Error> {
-        use SeralizableError::*;
-        match *self {
-            RealError(ref rerr) => rerr.cause(),
-            PseudoError(ref perr) => perr.cause(),
-        }
-    }
-}
 
 /// An error that has been made seralization-capable, but has lost it's fields, due to incompatibility with the library or preserving fields being unnesacary.
 ///
@@ -112,28 +63,28 @@ impl Error for PseudoError {
         // So cause.as_ref is Option::as_ref, turning Option<Box<PseudoError>> into Option<&Box<PseudoError>>.
         // Mapping lets me take an &Box<_>.
         // &**cause is best read right to left. The transforms work like this:
-        // &Box<_> -> Box<_> -> _ -> &PseudoError
+        // &Box<_> -> Box<_> -> _ -> &_
         // From there it's just &PseudoError as &Error.
     }
 }
 
 /// Serializes any type implementing Error to a string that can be deseralized with deserialize_bytes.
 pub fn serialize_error_bytes(to_ser: &Error) -> Vec<u8> {
-    bin_serialize(&SeralizableError::from(to_ser), SizeLimit::Infinite).unwrap()
+    bin_serialize(&PseudoError::from(to_ser), SizeLimit::Infinite).unwrap()
 }
 
 /// Serializes any type implementing Error to a string that can be deseralized with deserialize_string.
 pub fn serialize_error_string(to_ser: &Error) -> String {
-    json_serialize(&SeralizableError::from(to_ser)).unwrap()
+    json_serialize(&PseudoError::from(to_ser)).unwrap()
 }
 
 /// Deseralizes a slice of bytes into a SeralizableError.
-pub fn deserialize_error_bytes(to_de: &[u8]) -> Result<SeralizableError, bin::DeserializeError> {
+pub fn deserialize_error_bytes(to_de: &[u8]) -> Result<PseudoError, bin::DeserializeError> {
     bin_deserialize(to_de)
 }
 
 /// Deseralizes a string to a SeralizableError.
-pub fn deserialize_error_string(to_de: &str) -> Result<SeralizableError, json::Error> {
+pub fn deserialize_error_string(to_de: &str) -> Result<PseudoError, json::Error> {
     json_deserialize(to_de)
 }
 
