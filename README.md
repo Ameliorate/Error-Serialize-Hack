@@ -6,8 +6,6 @@ Note that due to the way errors are serialized, some custom ones with side effec
 
 #Links
 
-TODO: Actually link to these things when they exist.
-
 [Documentation](https://crates.fyi/crates/errorser/)  
 [Crates.io](https://crates.io/crates/errorser/)
 
