@@ -17,6 +17,9 @@ extern crate rustc_serialize;
 extern crate serde;
 extern crate serde_json;
 
+#[cfg(test)]
+mod test;
+
 use std::convert::{From, AsRef};
 use std::error::Error;
 use std::fmt;
@@ -33,11 +36,12 @@ use serde_json::{to_string as json_serialize, from_str as json_deserialize, erro
 pub struct PseudoError {
     cause: Option<Box<PseudoError>>,
     desc: String,
+    disp: String,
 }
 
 impl Display for PseudoError {
     fn fmt(&self, fmt: &mut Formatter) -> Result<(), fmt::Error> {
-        write!(fmt, "{}", self.desc)
+        write!(fmt, "{}", self.disp)
     }
 }
 
@@ -46,6 +50,7 @@ impl<'a> From<&'a Error> for PseudoError {
         PseudoError {
             cause: err.cause().map(|cause| Box::new(PseudoError::from(cause))), /* In prevous versions of this line, it was almost lisp with the number of close perens here. */
             desc: err.description().to_owned(),
+            disp: format!("{}", err),
         }
     }
 }
@@ -86,10 +91,4 @@ pub fn deserialize_error_bytes(to_de: &[u8]) -> Result<PseudoError, bin::Deseria
 /// Deseralizes a string to a SeralizableError.
 pub fn deserialize_error_string(to_de: &str) -> Result<PseudoError, json::Error> {
     json_deserialize(to_de)
-}
-
-#[cfg(test)]
-mod test {
-    #[test]
-    fn serialize_error_bytes() {}
 }
