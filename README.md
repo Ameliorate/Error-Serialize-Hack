@@ -14,6 +14,9 @@ Crates.io
 
 #Examples
 
-```
-TODO: Add Examples.
+```rust
+use errorser::{deserialize_error_string, serialize_error_string};
+let error = error_prone_function();
+let string = serialize_error_string(&error);
+let pseudoerror = deserialize_error_string(&string).unwrap();
 ```

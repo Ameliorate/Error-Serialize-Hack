@@ -29,9 +29,19 @@ use bincode::{SizeLimit, serde as bin};
 use bincode::serde::{serialize as bin_serialize, deserialize as bin_deserialize};
 use serde_json::{to_string as json_serialize, from_str as json_deserialize, error as json};
 
-/// An error that has been made seralization-capable, but has lost it's fields, due to incompatibility with the library or preserving fields being unnesacary.
+/// An error that has been made seralization-capable.
 ///
-/// See the crate root for more info.
+/// # Examples
+/// ```
+/// use std::convert::Into;
+/// use std::error::Error;
+/// use errorser::PseudoError;
+/// # use std::env::VarError;
+/// # let error = VarError::NotPresent;
+/// // let error = error_prone_function();
+/// let perror= PseudoError::from(&error as &Error);
+/// ```
+
 #[derive(Clone, Serialize, Deserialize, Debug, RustcEncodable, RustcDecodable)]
 pub struct PseudoError {
     cause: Option<Box<PseudoError>>,
@@ -73,22 +83,60 @@ impl Error for PseudoError {
     }
 }
 
-/// Serializes any type implementing Error to a string that can be deseralized with deserialize_bytes.
+/// Serializes any type implementing Error to a byte vector that can be deseralized with deserialize_bytes.
+///
+/// # Examples
+/// ```
+/// use errorser::serialize_error_bytes;
+/// # use std::env::VarError;   // I'm lazy, so I'll just use a simple error already defined in std.
+/// # let error = VarError::NotPresent;
+/// // let error = error_prone_function();
+/// let bytes = serialize_error_bytes(&error);
+/// ```
 pub fn serialize_error_bytes(to_ser: &Error) -> Vec<u8> {
     bin_serialize(&PseudoError::from(to_ser), SizeLimit::Infinite).unwrap()
 }
 
 /// Serializes any type implementing Error to a string that can be deseralized with deserialize_string.
+///
+/// # Examples
+/// ```
+/// use errorser::serialize_error_string;
+/// # use std::env::VarError;
+/// # let error = VarError::NotPresent;
+/// // let error = error_prone_function();
+/// let string = serialize_error_string(&error);
+/// ```
 pub fn serialize_error_string(to_ser: &Error) -> String {
     json_serialize(&PseudoError::from(to_ser)).unwrap()
 }
 
 /// Deseralizes a slice of bytes into a SeralizableError.
+///
+/// # Examples
+/// ```
+/// use errorser::{deserialize_error_bytes, serialize_error_bytes};
+/// # use std::env::VarError;
+/// # let error = VarError::NotPresent;
+/// // let error = error_prone_function();
+/// let bytes = serialize_error_bytes(&error);
+/// let pseudoerror = deserialize_error_bytes(&bytes).unwrap();
+/// ```
 pub fn deserialize_error_bytes(to_de: &[u8]) -> Result<PseudoError, bin::DeserializeError> {
     bin_deserialize(to_de)
 }
 
 /// Deseralizes a string to a SeralizableError.
+///
+/// # Examples
+/// ```
+/// use errorser::{deserialize_error_string, serialize_error_string};
+/// # use std::env::VarError;
+/// # let error = VarError::NotPresent;
+/// // let error = error_prone_function();
+/// let string = serialize_error_string(&error);
+/// let pseudoerror = deserialize_error_string(&string).unwrap();
+/// ```
 pub fn deserialize_error_string(to_de: &str) -> Result<PseudoError, json::Error> {
     json_deserialize(to_de)
 }
